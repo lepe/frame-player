@@ -19,7 +19,7 @@ var FramePlayer = function(el, options) {
     this.height = '320px';
     this.backwards = false;
     this.currentFrame = -1;
-    this.startFrame = 0
+    this.startFrame = 0;
     this.radius = null;
 
     this.setOptions(options);
@@ -32,13 +32,14 @@ var FramePlayer = function(el, options) {
 };
 
 FramePlayer.prototype.setOptions = function(options) {
-    if ('rate' in options) { this.rate = options.rate; }
+    if ('rate' in options) { this.rate = this._rate = options.rate; }
     if ('controls' in options) { this.controls = options.controls;}
     if ('autoplay' in options) { if (!options.autoplay) { this.paused = true; } }
     if ('width' in options) { this.width = options.width; }
     if ('height' in options) { this.height = options.height; }
     if ('startFrame' in options) { this.startFrame = this.currentFrame = options.startFrame; }
     if ('backwards' in options) { this.backwards = options.backwards; }
+    if ('isSpin' in options) { this.isSpin = options.isSpin; }
     if ('radius' in options) {
         var currentStyle = document.createElement('style');
             currentStyle.setAttribute('id', 'style-' + this.elem);
@@ -60,24 +61,55 @@ FramePlayer.prototype.render = function(player) {
         then = Date.now(),
         interval = 1000/player.rate,
         delta,
-        videoFramesNum = player.jsonVideoFile.frames.length;
+        videoFramesNum = player.jsonVideoFile.frames.length,
+        fps = 1,
+        isFirstTime = true;
+
+    if (interval < 33.3) {
+        fps = Math.round(33.3 / interval);
+        interval = 33.3;
+    }
+
+    this._fps = fps;
 
     var processFrame = function() {
 
         now = Date.now();
         delta = now - then;
 
-        if (delta > interval) {
+        if (delta > interval || isFirstTime) {
+            isFirstTime = false;
             then = now - (delta % interval);
 
             if(!player.paused) {
 
-                player.currentFrame = (player.backwards) ? player.currentFrame -= 1 : player.currentFrame += 1;
+                player.currentFrame = (player.backwards) ? player.currentFrame -= 1 * fps : player.currentFrame += 1 * fps;
+
+                var isFinished = (player.playToFrame &&
+                    (player.currentFrame === player.playToFrame || Math.abs(player.currentFrame - player.playToFrame) < player._fps + 1));
+
+                if (isFinished) {
+                    player.currentFrame = player.playToFrame;
+                }
 
                 if (player.currentFrame >= videoFramesNum) player.currentFrame = 0;
                 else if (player.currentFrame < 0) player.currentFrame = videoFramesNum-1;
 
                 player.drawFrame(player);
+
+                if (isFinished) {
+                    player.paused = true;
+                    player.playToFrame = 0;
+
+                    // Notify system
+                    $(player).trigger('paused');
+
+                    return;
+                }
+
+
+            } else {
+                return;
             }
         }
 
@@ -184,6 +216,10 @@ FramePlayer.prototype.createControlBar = function() {
 };
 
 FramePlayer.prototype.play = function() {
+    if (this._isLoading) {
+        return;
+    }
+    this._isLoading = true;
     this.getFile(this.jsonVideoSrc, function(player) {
         if (player.paused) {
             player.render(player);
@@ -192,6 +228,35 @@ FramePlayer.prototype.play = function() {
             player.render(player);
         }
     });
+};
+
+FramePlayer.prototype.playTo = function(frame) {
+
+    this.playToFrame = frame;
+
+    var isBackwards;
+
+    if (this.isSpin) {
+
+        var totalFrames = this.jsonVideoFile.frames.length - 1,
+            framesForward = Math.abs(frame - this.currentFrame),
+            framesBackward = Math.abs(totalFrames + frame - this.currentFrame),
+            isBackwards = framesForward > framesBackward;
+
+    } else {
+
+        isBackwards = false;
+
+    }
+
+    if (frame < this.currentFrame)
+        isBackwards = !isBackwards;
+
+    this.backwards = isBackwards;
+    var baseRate = this._rate;
+    this.rate = (!this.isSpin && this.backwards) ? baseRate * 2 : baseRate;
+    this.paused = false;
+    this.render(this);
 };
 
 FramePlayer.prototype.resume = function() {
