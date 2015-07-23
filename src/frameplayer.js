@@ -263,8 +263,8 @@ FramePlayer.prototype.resume = function() {
     var btnPlay = document.getElementById('play-' + this.elem),
         btnPause = document.getElementById('pause-' + this.elem);
 
-    btnPlay.style.display = 'none';
-    btnPause.style.display = 'block';
+    if (btnPlay) btnPlay.style.display = 'none';
+    if (btnPause) btnPause.style.display = 'block';
     this.paused = false;
 };
 
@@ -272,8 +272,8 @@ FramePlayer.prototype.pause = function() {
     var btnPlay = document.getElementById('play-' + this.elem),
         btnPause = document.getElementById('pause-' + this.elem);
 
-    btnPlay.style.display = 'block';
-    btnPause.style.display = 'none';
+    if (btnPlay) btnPlay.style.display = 'block';
+    if (btnPause) btnPause.style.display = 'none';
     this.paused = true;
 };
 
