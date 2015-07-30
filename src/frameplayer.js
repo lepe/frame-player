@@ -220,14 +220,28 @@ FramePlayer.prototype.play = function() {
         return;
     }
     this._isLoading = true;
-    this.getFile(this.jsonVideoSrc, function(player) {
+
+    var callback = function(player) {
         if (player.paused) {
             player.render(player);
             player.drawFrame(player);
         }else{
             player.render(player);
         }
-    });
+    };
+
+    // See if the video has already been preloaded
+    if ('_jsonVideo' in window && this.jsonVideoSrc in window._jsonVideo) {
+
+        var video = window._jsonVideo[this.jsonVideoSrc];
+        this.jsonVideoFile = JSON.parse(video);
+        callback(this);
+
+    } else {
+
+        this.getFile(this.jsonVideoSrc, callback);
+
+    }
 };
 
 FramePlayer.prototype.playTo = function(frame) {
