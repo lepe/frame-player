@@ -6,7 +6,7 @@
     "Vagner Santana <vagnervjs@gmail.com>"
   ],
   "description": "A video player without video files, just JSON. Based on \"images frames\" thought to mobile devices!",
-  "main": "src/js/frameplayer.js",
+  "main": "src/frameplayer.js",
   "keywords": [
     "json",
     "player",
