@@ -8,19 +8,23 @@
     @since: 04/10/2013
 */
 
-var FramePlayer = function(el, options) {
+const FramePlayer = function (el, options) {
     this.divCont = document.getElementById(el);
     this.elem = el;
     this.jsonVideoSrc = this.divCont.getAttribute('data-vidsrc');
-    this.rate = 20,
-    this.controls = true,
-    this.paused = false,
-    this.width = '480px',
+    this.rate = 20;
+    this.controls = true;
+    this.paused = false;
+    this.width = '480px';
     this.height = '320px';
     this.backwards = false;
     this.currentFrame = -1;
     this.startFrame = 0;
     this.radius = null;
+    this.value = 0;
+
+    // Events
+    this.onFinish = function () {}
 
     this.setOptions(options);
     this.initializeRequestAnimationFrame();
@@ -31,48 +35,61 @@ var FramePlayer = function(el, options) {
     this.divCont.appendChild(this.canvas);
 };
 
-FramePlayer.prototype.setOptions = function(options) {
-    if ('rate' in options) { this.rate = this._rate = options.rate; }
-    if ('controls' in options) { this.controls = options.controls;}
-    if ('autoplay' in options) { if (!options.autoplay) { this.paused = true; } }
-    if ('width' in options) { this.width = options.width; }
-    if ('height' in options) { this.height = options.height; }
-    if ('startFrame' in options) { this.startFrame = this.currentFrame = options.startFrame; }
-    if ('backwards' in options) { this.backwards = options.backwards; }
-    if ('isSpin' in options) { this.isSpin = options.isSpin; }
+FramePlayer.prototype.setOptions = function (options) {
+    if ('rate' in options) {
+        this.rate = this._rate = options.rate;
+    }
+    if ('controls' in options) {
+        this.controls = options.controls;
+    }
+    if ('autoplay' in options) {
+        if (!options.autoplay) {
+            this.paused = true;
+        }
+    }
+    if ('width' in options) {
+        this.width = options.width;
+    }
+    if ('height' in options) {
+        this.height = options.height;
+    }
+    if ('startFrame' in options) {
+        this.startFrame = this.currentFrame = options.startFrame;
+    }
+    if ('backwards' in options) {
+        this.backwards = options.backwards;
+    }
+    if ('isSpin' in options) {
+        this.isSpin = options.isSpin;
+    }
     if ('radius' in options) {
-        var currentStyle = document.createElement('style');
-            currentStyle.setAttribute('id', 'style-' + this.elem);
-            currentStyle.innerHTML = '#' + this.elem + ', .frames-' + this.elem + '{ border-radius: ' + options.radius + '; overflow: hidden;}';
-            document.head.appendChild(currentStyle);
+        const currentStyle = document.createElement('style');
+        currentStyle.setAttribute('id', 'style-' + this.elem);
+        currentStyle.innerHTML = '#' + this.elem + ', .frames-' + this.elem + '{ border-radius: ' + options.radius + '; overflow: hidden;}';
+        document.head.appendChild(currentStyle);
     }
 
     this.divCont.style.width = this.width;
     this.divCont.style.height = this.height;
-    
-    if(this.controls) {
+
+    if (this.controls) {
         this.createControlBar();
     }
 };
 
-FramePlayer.prototype.render = function(player) {
+FramePlayer.prototype.render = function (player) {
 
-    var now,
+    let now,
         then = Date.now(),
-        interval = 1000/player.rate,
+        interval = 1000 / player.rate,
         delta,
         videoFramesNum = player.jsonVideoFile.frames.length,
         fps = 1,
         isFirstTime = true;
 
-    if (interval < 33.3) {
-        fps = Math.round(33.3 / interval);
-        interval = 33.3;
-    }
-
     this._fps = fps;
 
-    var processFrame = function() {
+    const processFrame = function () {
 
         now = Date.now();
         delta = now - then;
@@ -81,11 +98,11 @@ FramePlayer.prototype.render = function(player) {
             isFirstTime = false;
             then = now - (delta % interval);
 
-            if(!player.paused) {
+            if (!player.paused) {
 
-                player.currentFrame = (player.backwards) ? player.currentFrame -= 1 * fps : player.currentFrame += 1 * fps;
+                player.currentFrame = (player.backwards) ? player.currentFrame -= fps : player.currentFrame += fps;
 
-                var isFinished = (player.playToFrame &&
+                const isFinished = (player.playToFrame &&
                     (player.currentFrame === player.playToFrame || Math.abs(player.currentFrame - player.playToFrame) < player._fps + 1));
 
                 if (isFinished) {
@@ -93,7 +110,7 @@ FramePlayer.prototype.render = function(player) {
                 }
 
                 if (player.currentFrame >= videoFramesNum) player.currentFrame = 0;
-                else if (player.currentFrame < 0) player.currentFrame = videoFramesNum-1;
+                else if (player.currentFrame < 0) player.currentFrame = videoFramesNum - 1;
 
                 player.drawFrame(player);
 
@@ -102,12 +119,9 @@ FramePlayer.prototype.render = function(player) {
                     player.playToFrame = 0;
 
                     // Notify system
-                    $(player).trigger('paused');
-
+                    player.onFinish();
                     return;
                 }
-
-
             } else {
                 return;
             }
@@ -116,49 +130,48 @@ FramePlayer.prototype.render = function(player) {
         window.requestAnimationFrame(processFrame);
     };
 
-
     window.requestAnimationFrame(processFrame);
 };
 
-FramePlayer.prototype.drawFrame = function(player) {
+FramePlayer.prototype.drawFrame = function (player) {
     player.img.src = player.jsonVideoFile.frames[player.currentFrame];
     player.context.drawImage(player.img, 0, 0, player.canvas.width, player.canvas.height);
 };
 
-FramePlayer.prototype.createControlBar = function() {
-    var _self = this,
-    controlBar = document.createElement('div');
+FramePlayer.prototype.createControlBar = function () {
+    const _self = this,
+        controlBar = document.createElement('div');
     controlBar.setAttribute('class', 'fp-ctrl');
     controlBar.style.width = this.width;
 
     // Pause Button
-    var btnPause = document.createElement('button');
+    const btnPause = document.createElement('button');
     btnPause.setAttribute('id', 'pause-' + _self.elem);
     btnPause.setAttribute('class', 'fp-btn');
     btnPause.innerHTML = 'Pause';
-    btnPause.addEventListener('click', function() {
+    btnPause.addEventListener('click', function () {
             _self.pause();
         }, false
     );
     controlBar.appendChild(btnPause);
 
     // Play Button
-    var btnPlay = document.createElement('button');
+    const btnPlay = document.createElement('button');
     btnPlay.setAttribute('id', 'play-' + _self.elem);
     btnPlay.setAttribute('class', 'fp-btn');
     btnPlay.innerHTML = 'Play';
-    btnPlay.addEventListener('click', function() {
+    btnPlay.addEventListener('click', function () {
             _self.resume();
         }, false
     );
     controlBar.appendChild(btnPlay);
 
     // Backwards Button
-    var btnBackwards = document.createElement('button');
+    const btnBackwards = document.createElement('button');
     btnBackwards.setAttribute('id', 'backwards-' + _self.elem);
     btnBackwards.setAttribute('class', 'fp-btn');
     btnBackwards.innerHTML = 'Backward';
-    btnBackwards.addEventListener('click', function() {
+    btnBackwards.addEventListener('click', function () {
             _self.reverse()
         }, false
     );
@@ -168,11 +181,12 @@ FramePlayer.prototype.createControlBar = function() {
     _self.paused ? btnPause.style.display = 'none' : btnPlay.style.display = 'none';
 
     // Filter Select
-    var selectFilter = document.createElement('select'),
+    const selectFilter = document.createElement('select'),
         options = ['normal', 'grayscale', 'sepia', 'invert'];
 
-    for (var i = 0, t = options.length; i < t; i++) {
-        var $option = document.createElement('option');
+    let i = 0, t = options.length;
+    for (; i < t; i++) {
+        const $option = document.createElement('option');
 
         $option.setAttribute('value', options[i]);
         $option.innerHTML = options[i];
@@ -181,29 +195,29 @@ FramePlayer.prototype.createControlBar = function() {
 
     selectFilter.setAttribute('id', 'filter-' + _self.elem);
     selectFilter.setAttribute('class', 'fp-select');
-    selectFilter.addEventListener('change', function() {
+    selectFilter.addEventListener('change', function () {
             _self.setFilter(this.value);
         }, false
     );
     controlBar.appendChild(selectFilter);
 
-    var toFrameLabel = document.createElement('label'),
-        toFrameInput = document.createElement('input'),
-        toFrameSubmit = document.createElement('input');
+    const toFrameLabel = document.createElement('label'),
+          toFrameInput = document.createElement('input'),
+          toFrameSubmit = document.createElement('input');
 
-    toFrameLabel.className =  "to-frame";
+    toFrameLabel.className = "to-frame";
 
     toFrameInput.type = 'text';
     toFrameInput.name = 'frame';
     toFrameInput.value = _self.startFrame;
-    toFrameInput.className =  "to-frame";
+    toFrameInput.className = "to-frame";
     _self.toFrameInput = toFrameInput;
 
     toFrameSubmit.type = 'submit';
     toFrameSubmit.value = 'go to frame';
 
-    toFrameSubmit.onclick = function() {
-        value = parseInt(toFrameInput.value, 10)
+    toFrameSubmit.onclick = function () {
+        this.value = parseInt(toFrameInput.value, 10)
         _self.gotoFrame(value);
     }
 
@@ -215,66 +229,55 @@ FramePlayer.prototype.createControlBar = function() {
     this.divCont.appendChild(controlBar);
 };
 
-FramePlayer.prototype.play = function() {
+FramePlayer.prototype.play = function () {
     if (this._isLoading) {
         return;
     }
     this._isLoading = true;
 
-    var callback = function(player) {
+    const callback = function (player) {
         if (player.paused) {
             player.render(player);
             player.drawFrame(player);
-        }else{
+        } else {
             player.render(player);
         }
     };
-
     // See if the video has already been preloaded
     if ('_jsonVideo' in window && this.jsonVideoSrc in window._jsonVideo) {
-
-        var video = window._jsonVideo[this.jsonVideoSrc];
+        const video = window._jsonVideo[this.jsonVideoSrc];
         this.jsonVideoFile = JSON.parse(video);
         callback(this);
-
     } else {
-
         this.getFile(this.jsonVideoSrc, callback);
-
     }
 };
 
-FramePlayer.prototype.playTo = function(frame) {
-
+FramePlayer.prototype.playTo = function (frame) {
     this.playToFrame = frame;
-
-    var isBackwards;
-
+    let isBackwards;
     if (this.isSpin) {
 
-        var totalFrames = this.jsonVideoFile.frames.length - 1,
-            framesForward = Math.abs(frame - this.currentFrame),
-            framesBackward = Math.abs(totalFrames + frame - this.currentFrame),
-            isBackwards = framesForward > framesBackward;
+        const totalFrames  = this.jsonVideoFile.frames.length - 1,
+            framesForward  = Math.abs(frame - this.currentFrame),
+            framesBackward = Math.abs(totalFrames + frame - this.currentFrame);
+        isBackwards = framesForward > framesBackward;
 
     } else {
-
         isBackwards = false;
-
     }
-
-    if (frame < this.currentFrame)
+    if (frame < this.currentFrame) {
         isBackwards = !isBackwards;
-
+    }
     this.backwards = isBackwards;
-    var baseRate = this._rate;
+    const baseRate = this._rate;
     this.rate = (!this.isSpin && this.backwards) ? baseRate * 2 : baseRate;
     this.paused = false;
     this.render(this);
 };
 
-FramePlayer.prototype.resume = function() {
-    var btnPlay = document.getElementById('play-' + this.elem),
+FramePlayer.prototype.resume = function () {
+    const btnPlay = document.getElementById('play-' + this.elem),
         btnPause = document.getElementById('pause-' + this.elem);
 
     if (btnPlay) btnPlay.style.display = 'none';
@@ -282,8 +285,8 @@ FramePlayer.prototype.resume = function() {
     this.paused = false;
 };
 
-FramePlayer.prototype.pause = function() {
-    var btnPlay = document.getElementById('play-' + this.elem),
+FramePlayer.prototype.pause = function () {
+    const btnPlay = document.getElementById('play-' + this.elem),
         btnPause = document.getElementById('pause-' + this.elem);
 
     if (btnPlay) btnPlay.style.display = 'block';
@@ -291,14 +294,14 @@ FramePlayer.prototype.pause = function() {
     this.paused = true;
 };
 
-FramePlayer.prototype.reverse = function() {
-    var btnBackwards = document.getElementById('backwards-' + this.elem);
+FramePlayer.prototype.reverse = function () {
+    const btnBackwards = document.getElementById('backwards-' + this.elem);
     this.backwards = !this.backwards;
-    value = this.backwards ? 'Forward' :'Backward';
-    btnBackwards.innerHTML = value;
+    this.value = this.backwards ? 'Forward' : 'Backward';
+    btnBackwards.innerHTML = this.value;
 };
 
-FramePlayer.prototype.gotoFrame = function(value) {
+FramePlayer.prototype.gotoFrame = function (value) {
 
     if (value !== parseInt(value, 10)) return;
 
@@ -311,29 +314,29 @@ FramePlayer.prototype.gotoFrame = function(value) {
     }
 };
 
-FramePlayer.prototype.setFilter = function(filter) {
-    var canvas = document.querySelector('#' + this.elem + ' canvas');
+FramePlayer.prototype.setFilter = function (filter) {
+    const canvas = document.querySelector('#' + this.elem + ' canvas');
 
     switch (filter) {
-      case 'normal':
-        canvas.setAttribute('class', '');
-        break;
-      case 'grayscale':
-        canvas.setAttribute('class', 'fp-grayscale');
-        break;
-      case 'sepia':
-        canvas.setAttribute('class', 'fp-sepia');
-        break;
-      case 'invert':
-        canvas.setAttribute('class', 'fp-invert');
-        break;
-      default:
-        break;
+        case 'normal':
+            canvas.setAttribute('class', '');
+            break;
+        case 'grayscale':
+            canvas.setAttribute('class', 'fp-grayscale');
+            break;
+        case 'sepia':
+            canvas.setAttribute('class', 'fp-sepia');
+            break;
+        case 'invert':
+            canvas.setAttribute('class', 'fp-invert');
+            break;
+        default:
+            break;
     }
 };
 
-FramePlayer.prototype.getFile = function(src, callback) {
-    var _HTTP = new XMLHttpRequest(),
+FramePlayer.prototype.getFile = function (src, callback) {
+    let _HTTP = new XMLHttpRequest(),
         _self = this,
         p = document.createElement('p');
 
@@ -342,21 +345,21 @@ FramePlayer.prototype.getFile = function(src, callback) {
         _HTTP.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
         _HTTP.send(null);
 
-        _HTTP.onprogress = function() {
+        _HTTP.onprogress = function () {
             p.innerHTML = 'Loading...';
             p.setAttribute('class', 'fp-loading');
             _self.divCont.appendChild(p);
         };
 
-        if (typeof(_HTTP.onload) !== undefined) {
-            _HTTP.onload = function() {
+        if (typeof (_HTTP.onload) !== undefined) {
+            _HTTP.onload = function () {
                 _self.divCont.removeChild(p);
                 _self.jsonVideoFile = JSON.parse(this.responseText)
                 callback(_self);
                 _HTTP = null;
             };
         } else {
-            _HTTP.onreadystatechange = function() {
+            _HTTP.onreadystatechange = function () {
                 if (_HTTP.readyState === 4) {
                     _self.divCont.removeChild(p);
                     _self.jsonVideoFile = JSON.parse(this.responseText)
@@ -371,32 +374,34 @@ FramePlayer.prototype.getFile = function(src, callback) {
 };
 
 // Polyfill
-FramePlayer.prototype.initializeRequestAnimationFrame = function() {
+FramePlayer.prototype.initializeRequestAnimationFrame = function () {
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
     // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
     // requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
     // MIT license
 
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    let lastTime = 0;
+    const vendors = ['ms', 'moz', 'webkit', 'o'];
+    for (let x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
+            || window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
 
     if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-              timeToCall);
+        window.requestAnimationFrame = function (callback) {
+            const currTime = new Date().getTime();
+            const timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            const id = window.setTimeout(function () {
+                    callback(currTime + timeToCall);
+                },
+                timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
 
     if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
+        window.cancelAnimationFrame = function (id) {
             clearTimeout(id);
         };
 };
