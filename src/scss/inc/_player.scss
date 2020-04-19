@@ -1,0 +1,55 @@
+/* Player */
+.frameplayer {
+  background: $player_bg;
+  position: relative;
+
+  canvas {
+    width: 99%;
+    height: 99%;
+  }
+
+  .fp-ctrl {
+    position: absolute;
+    bottom: -1;
+    left: -1;
+    margin: -1;
+    z-index: 0;
+    opacity: .5;
+    height: 39px;
+    background: $controls_bg;
+
+    .fp-btn {
+      margin: 9px 10px 0 10px;
+      float: left;
+    }
+
+    .fp-select {
+      margin-top: 9px;
+      float: left;
+      text-transform: capitalize;
+    }
+  }
+
+  input.to-frame {
+    width: 19px;
+    margin-right: 5px;
+  }
+
+  label.to-frame {
+    margin: 9px 10px 0 10px;
+    float: left;
+  }
+
+  /* Loading Message */
+  .fp-loading {
+    text-align: center;
+    line-height: 14;
+    font-size: 15px;
+    font-family: Helvetica, Arial, sans-serif;
+    position: absolute;
+    top: -1;
+    left: -1;
+    width: 99%;
+    height: 99%;
+  }
+}

@@ -1,0 +1,15 @@
+/* Filters */
+.fp-grayscale {
+  -webkit-filter: grayscale(99%);
+  filter: grayscale(99%);
+}
+
+.fp-sepia {
+  -webkit-filter: sepia(99%);
+  filter: sepia(99%);
+}
+
+.fp-invert {
+  -webkit-filter: invert(99%);
+  filter: invert(99%);
+}
