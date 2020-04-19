@@ -1,14 +1,14 @@
-var gulp = require('gulp'),
+const gulp = require('gulp'),
 	concat = require('gulp-concat'),
-	uglify = require('gulp-uglify'),
+	uglify = require('gulp-uglify-es').default,
 	cssmin = require('gulp-cssmin'),
-	sass   = require('gulp-sass'),
-	del    = require('del');
+	sass = require('gulp-sass'),
+	del = require('del');
 
-var paths = {
+const paths = {
 	prefix: 'frameplayer.min',
 	build: 'dist',
-	src  : 'src',
+	src: 'src',
 	js: ['src/*.js'],
 	css: ['src/*.css'],
 	scss: ['src/scss/*.scss']

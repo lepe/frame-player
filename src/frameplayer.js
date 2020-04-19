@@ -21,10 +21,10 @@ const FramePlayer = function (el, options) {
     this.currentFrame = -1;
     this.startFrame = 0;
     this.radius = null;
-    this.value = 0;
 
     // Events
-    this.onFinish = function () {}
+    this.onFinish = function () {
+    }
 
     this.setOptions(options);
     this.initializeRequestAnimationFrame();
@@ -202,8 +202,8 @@ FramePlayer.prototype.createControlBar = function () {
     controlBar.appendChild(selectFilter);
 
     const toFrameLabel = document.createElement('label'),
-          toFrameInput = document.createElement('input'),
-          toFrameSubmit = document.createElement('input');
+        toFrameInput = document.createElement('input'),
+        toFrameSubmit = document.createElement('input');
 
     toFrameLabel.className = "to-frame";
 
@@ -217,7 +217,7 @@ FramePlayer.prototype.createControlBar = function () {
     toFrameSubmit.value = 'go to frame';
 
     toFrameSubmit.onclick = function () {
-        this.value = parseInt(toFrameInput.value, 10)
+        let value = parseInt(toFrameInput.value, 10)
         _self.gotoFrame(value);
     }
 
@@ -258,8 +258,8 @@ FramePlayer.prototype.playTo = function (frame) {
     let isBackwards;
     if (this.isSpin) {
 
-        const totalFrames  = this.jsonVideoFile.frames.length - 1,
-            framesForward  = Math.abs(frame - this.currentFrame),
+        const totalFrames = this.jsonVideoFile.frames.length - 1,
+            framesForward = Math.abs(frame - this.currentFrame),
             framesBackward = Math.abs(totalFrames + frame - this.currentFrame);
         isBackwards = framesForward > framesBackward;
 
@@ -297,8 +297,8 @@ FramePlayer.prototype.pause = function () {
 FramePlayer.prototype.reverse = function () {
     const btnBackwards = document.getElementById('backwards-' + this.elem);
     this.backwards = !this.backwards;
-    this.value = this.backwards ? 'Forward' : 'Backward';
-    btnBackwards.innerHTML = this.value;
+    let value = this.backwards ? 'Forward' : 'Backward';
+    btnBackwards.innerHTML = value;
 };
 
 FramePlayer.prototype.gotoFrame = function (value) {
@@ -388,7 +388,7 @@ FramePlayer.prototype.initializeRequestAnimationFrame = function () {
             || window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
 
-    if (!window.requestAnimationFrame)
+    if (!window.requestAnimationFrame) {
         window.requestAnimationFrame = function (callback) {
             const currTime = new Date().getTime();
             const timeToCall = Math.max(0, 16 - (currTime - lastTime));
@@ -399,9 +399,11 @@ FramePlayer.prototype.initializeRequestAnimationFrame = function () {
             lastTime = currTime + timeToCall;
             return id;
         };
+    }
 
-    if (!window.cancelAnimationFrame)
+    if (!window.cancelAnimationFrame) {
         window.cancelAnimationFrame = function (id) {
             clearTimeout(id);
         };
+    }
 };

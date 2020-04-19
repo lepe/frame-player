@@ -3,13 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Frame Player</title>
-
-    <!-- Development -->
-    <!-- <link rel="stylesheet" href="src/frameplayer.css"> -->
-
-    <!-- Production -->
     <link rel="stylesheet" href="dist/frameplayer.min.css">
-
     <style>
       .frameplayer {
         float: left;
@@ -20,8 +14,6 @@
 <body>
   <div id="my-player-01" class="frameplayer" data-vidsrc="videos/dragons.json"></div>
   <div id="my-player-02" class="frameplayer" data-vidsrc="videos/video02.json"></div>
-
-
   <!-- Development -->
   <!-- <script src="src/frameplayer.js"></script> -->
 
@@ -29,24 +21,18 @@
   <script src="dist/frameplayer.min.js"></script>
 
   <script>
-      var fpOptions = ({
-          'rate': 30,
+      const fpOptions = ({
+          'rate': 20,
           'controls': true,
-          'autoplay': true,
           'backwards': false,
-          'startFrame': 10,
-          'width': '400px',
-          'height': '260px'
+          'startFrame': 1,
+          'width': '640px',
       });
 
-      var player01 = new FramePlayer('my-player-01', fpOptions);
-
-      fpOptions.autoplay = false
-      var player02 = new FramePlayer('my-player-02', fpOptions);
-
+      const player01 = new FramePlayer('my-player-01', fpOptions);
+      const player02 = new FramePlayer('my-player-02', fpOptions);
       player01.play();
-      player02.gotoFrame(30);
-
+      player02.play();
   </script>
 </body>
 </html>

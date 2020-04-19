@@ -9,12 +9,12 @@
 */
 /* Player */
 .frameplayer {
-  background: #ccc;
+  background: #000;
   position: relative;
   /* Loading Message */ }
   .frameplayer canvas {
-    width: 99%;
-    height: 99%; }
+    width: 100%;
+    height: auto; }
   .frameplayer .fp-ctrl {
     position: absolute;
     bottom: -1;
