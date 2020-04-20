@@ -25,18 +25,18 @@ gulp.task('js', ["clean"], function() {
 		.pipe(gulp.dest(paths.build));
 });
 
-gulp.task('css', ["clean"], function() {
-    return gulp.src(paths.css)
-		.pipe(cssmin())
-		.pipe(concat(paths.prefix +  '.css'))
-		.pipe(gulp.dest(paths.build));
-});
-
 sass.compiler = require('node-sass');
-gulp.task('sass', ["clean", "css"], function () {
+gulp.task('sass', ["clean"], function () {
 	return gulp.src(paths.scss)
 		.pipe(sass().on('error', sass.logError))
 		.pipe(gulp.dest(paths.src));
+});
+
+gulp.task('css', ["clean", 'sass'], function() {
+	return gulp.src(paths.css)
+		.pipe(cssmin())
+		.pipe(concat(paths.prefix +  '.css'))
+		.pipe(gulp.dest(paths.build));
 });
 
 // Watch
