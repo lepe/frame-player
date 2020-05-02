@@ -1,16 +1,22 @@
-#Frame Player
+# About this fork
+
+I fixed some minor issues and merged some of the other forks into this one, but in the end, I decided to create a whole new project (as `Frame Player` was too slow):
+
+[NDJSON Player](https://github.com/lepe/ndjson-player). 
+
+# Frame Player
 
 A video player without video files, just JSON. Based on "images frames" thought to mobile devices!
 
 - Project Page: [http://vagnervjs.github.io/frame-player](http://vagnervjs.github.io/frame-player)
 
-##The Problem
+## The Problem
 The problem of today's HTML5 video is that it can't be played in-line on an HTML page on mobile devices. The way the handheld devices handle it is they open the video in a native player which takes over the page itself, making it impossible to implement any interaction while the video is playing. Also, you can't play two videos at the same time.
 
-##The Solution
+## The Solution
 Create a player instead of playing video files, show a sequence of images at a certain rate.
 
-##Instalation
+## Instalation
 
 - Download the [latest version](https://github.com/vagnervjs/frame-player/releases/) of Frame Player.
 
@@ -27,7 +33,7 @@ bower install frame-player
     <script src="path-to/frameplayer.js"></script>
 ```
 
-##Usage
+## Usage
 
 - Insert this HTML code on any part of your page and set the data-src attribute for your JSON video file
 
@@ -67,7 +73,7 @@ Method          | Parameters     | Returns            | Description
 `gotoFrame()`   | Integer.       | Nothing.           | Jumps to a specific frame of the video.
 
 
-##Generating the JSON Video File (ffmpeg lib must be installed)
+## Generating the JSON Video File (ffmpeg lib must be installed)
 
     - Option 1: Node.js - single command
 
